@@ -210,13 +210,13 @@ export default class GitHubPublishPlugin extends Plugin {
             const { folderName, frontMatter } = publishResult;
 
             // 显示进度提示
-            showMessage("正在导出笔记内容...", 3000, "info");
+            showMessage("导出笔记...", 3000, "info");
 
             // 获取 Markdown 内容
             const markdownContent = await this.getNoteMarkdown(noteId);
             
             // 更新进度提示
-            showMessage("正在处理图片...", 3000, "info");
+            showMessage("处理图片...", 3000, "info");
             
             // 处理图片
             const processedContent = await ContentProcessor.processMarkdownImages(markdownContent, noteId);
@@ -224,14 +224,9 @@ export default class GitHubPublishPlugin extends Plugin {
             // 发布到 GitHub
             console.log("Starting GitHub publish process...");
             
-            // 计算总文件数 (Markdown文件 + 图片文件)
-            const totalFiles = 1 + processedContent.images.length;
-            let uploadedFiles = 0;
-            
-            // 更新进度提示
+            // 更新进度提示（批量上传只需要一个进度提示）
             const updateProgress = () => {
-                uploadedFiles++;
-                showMessage(`正在上传到 GitHub... (${uploadedFiles}/${totalFiles})`, 3000, "info");
+                showMessage("上传笔记...", 3000, "info");
             };
             
             await this.publishToGitHub(config, folderName, processedContent, updateProgress, frontMatter);
@@ -295,7 +290,7 @@ export default class GitHubPublishPlugin extends Plugin {
                 return;
             }
 
-            showMessage("正在删除发布内容...", 3000, "info");
+            showMessage("删除发布...", 3000, "info");
 
             const config = this.settings.getConfig();
             const [owner, repo] = config.repository.split('/');
@@ -303,12 +298,12 @@ export default class GitHubPublishPlugin extends Plugin {
 
             // 删除整个笔记目录（包括Markdown文件和图片）
             const noteDirectoryPath = `${config.basePath}/${publishRecord.folderName}`;
-            const deleteResult = await githubAPI.deleteFile(
+            const deleteResult = await githubAPI.deleteDirectory(
                 owner,
                 repo,
                 config.branch,
                 noteDirectoryPath,
-                `doc: 删除上传目录 ${publishRecord.folderName}`
+                `doc: 删除笔记 ${publishRecord.folderName}`
             );
 
             if (deleteResult.error) {
@@ -322,7 +317,7 @@ export default class GitHubPublishPlugin extends Plugin {
             // 保存更新后的发布记录
             await this.savePublishRecordsToStorage();
 
-            showMessage("删除发布成功！", 3000);
+            showMessage("删除成功！", 3000);
             console.log("Publish deletion completed successfully");
 
         } catch (error) {
@@ -535,7 +530,7 @@ export default class GitHubPublishPlugin extends Plugin {
 
 
     /**
-     * 发布到 GitHub
+     * 发布到 GitHub（使用批量上传，只创建一个提交）
      */
     private async publishToGitHub(config: GitHubConfig, folderName: string, processedContent: { content: string, images: ImageInfo[] }, progressCallback?: () => void, frontMatter?: string) {
         const [owner, repo] = config.repository.split('/');
@@ -544,57 +539,63 @@ export default class GitHubPublishPlugin extends Plugin {
         // 创建文件路径
         const filePath = `${config.basePath}/${folderName}/index.md`;
         
-        // 直接使用已处理好的内容（Front Matter已经在showPublishDialog中处理过）
+        // 组合Front Matter和内容
         let finalContent = processedContent.content;
         
-        // 上传 Markdown 文件
-        const uploadResult = await githubAPI.uploadFile(
+        // 如果提供了Front Matter，将其添加到内容前面
+        if (frontMatter && frontMatter.trim()) {
+            // 移除思源笔记可能自动添加的Front Matter（如果有的话）
+            finalContent = this.removeExistingFrontMatter(finalContent);
+            finalContent = `---\n${frontMatter}\n---\n\n${finalContent}`;
+        }
+
+        // 准备要上传的文件列表
+        const files: Array<{
+            path: string;
+            content: string;
+            mode?: string;
+        }> = [];
+
+        // 添加 Markdown 文件
+        files.push({
+            path: filePath,
+            content: finalContent,
+            mode: '100644' // 普通文件
+        });
+
+        // 添加图片文件
+        for (const image of processedContent.images) {
+            if (image.content) {
+                const imagePath = `${config.basePath}/${folderName}/${image.filename}`;
+                const base64Image = this.arrayBufferToBase64(image.content);
+                
+                files.push({
+                    path: imagePath,
+                    content: base64Image,
+                    mode: '100644' // 普通文件
+                });
+            }
+        }
+
+        // 使用批量上传方法（只创建一个提交）
+        const uploadResult = await githubAPI.uploadFiles(
             owner,
             repo,
             config.branch,
-            filePath,
-            finalContent,
+            files,
             `doc: 发布笔记 ${folderName}`
         );
 
         if (uploadResult.error) {
-            console.error("Markdown upload failed:", uploadResult);
-            throw new Error(`Markdown upload failed: ${uploadResult.error}`);
+            console.error("Batch upload failed:", uploadResult);
+            throw new Error(`发布失败: ${uploadResult.error}`);
         } else {
-            console.log("Markdown upload successful:", uploadResult.data);
+            console.log("Batch upload successful:", uploadResult.data);
         }
 
-        // 更新进度（Markdown文件上传完成）
+        // 更新进度（所有文件上传完成）
         if (progressCallback) {
             progressCallback();
-        }
-
-        // 上传图片文件
-        for (const image of processedContent.images) {
-            if (image.content) {
-                const imagePath = `${config.basePath}/${folderName}/${image.filename}`;
-                const imageContent = Array.from(new Uint8Array(image.content))
-                    .map(byte => String.fromCharCode(byte))
-                    .join('');
-                
-                const imageUploadResult = await githubAPI.uploadFile(
-                    owner,
-                    repo,
-                    config.branch,
-                    imagePath,
-                    btoa(imageContent),
-                    `doc: 发布笔记 ${folderName}`
-                );
-
-                if (imageUploadResult.error) {
-                    console.warn(`Image upload failed: ${image.filename}`, imageUploadResult.error);
-                }
-                
-                // 更新进度（每个图片文件上传完成）
-                if (progressCallback) {
-                    progressCallback();
-                }
-            }
         }
     }
 
@@ -689,6 +690,28 @@ export default class GitHubPublishPlugin extends Plugin {
         
         console.log("Current note has no publish record");
         return null;
+    }
+
+    /**
+     * 移除现有的Front Matter（如果存在）
+     * 防止思源笔记自动添加的元数据与用户配置的Front Matter冲突
+     */
+    private removeExistingFrontMatter(content: string): string {
+        // 匹配YAML Front Matter格式：以---开头和结尾的内容块
+        const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+        return content.replace(frontMatterRegex, '');
+    }
+
+    /**
+     * 将 ArrayBuffer 转换为 base64 字符串
+     */
+    private arrayBufferToBase64(buffer: ArrayBuffer): string {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
     }
 
 
