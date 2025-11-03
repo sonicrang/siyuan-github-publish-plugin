@@ -1,20 +1,41 @@
 {
-    "addTopBarIcon": "Add a top bar icon by plugin",
+    "pluginName": "GitHub Publish Plugin",
+    "pluginDescription": "Publish SiYuan notes to GitHub repository",
+    
+    "publishToGitHub": "Publish to GitHub",
+    "publishCurrentNote": "Publish Current Note",
+    "pluginSettings": "Plugin Settings",
+    "help": "Help",
+    
+    "githubUsername": "GitHub Username",
+    "accessToken": "Access Token",
+    "repository": "Repository",
+    "branch": "Branch",
+    "basePath": "Base Path",
+    
+    "testConnection": "Test Connection",
+    "connectionSuccess": "Connection test successful! Configuration is valid.",
+    "connectionFailed": "Connection test failed",
+    
+    "publishSuccess": "Publish successful!",
+    "publishFailed": "Publish failed",
+    "configIncomplete": "Configuration incomplete",
+    "pleaseOpenNote": "Please open a note first",
+    
+    "enterFileName": "Enter file name",
+    "fileName": "File name",
+    "confirm": "Confirm",
     "cancel": "Cancel",
-    "save": "Save",
-    "byeMenu": "Bye, Menu!",
-    "helloPlugin": "Hello, Plugin!",
-    "byePlugin": "Bye, Plugin!",
-    "showDialog": "Show dialog",
-    "removedData": "Data deleted",
-    "confirmRemove": "Confirm to delete the data in ${name}?",
-    "insertEmoji": "Insert Emoji",
-    "removeSpace": "Remove Space",
-    "getTab": "Print out all opened custom tabs in the debugger",
-    "name": "SiYuan",
-    "hello": {
-        "makesure": "Before using this template, please read the <a href=\"https://github.com/siyuan-note/plugin-sample\">offical sample</a>, make sure that you've known about the pipeline for plugin developing."
-    },
-    "hintTitle":"About",
-    "hintDesc":"<a href='https://github.com/siyuan-note/plugin-sample-vite-svelte'>plugin-sample-vite-svelte</a><br>@frostime<br>@88250<br>@zxkmm"
+    
+    "helpTitle": "Usage Instructions",
+    "helpContent": "1. First configure your GitHub information in settings<br>2. Open the note you want to publish<br>3. Click the publish button and select \"Publish Current Note\"<br>4. Enter the file name and confirm<br>5. The plugin will automatically process images and upload to GitHub",
+    "importantNote": "<strong>Note:</strong> GitHub Personal Access Token with repo permissions is required",
+    
+    "validationErrors": {
+        "usernameRequired": "GitHub username cannot be empty",
+        "tokenRequired": "Access Token cannot be empty",
+        "repoRequired": "Repository address cannot be empty",
+        "repoFormat": "Repository format should be username/repo",
+        "branchRequired": "Branch name cannot be empty"
+    }
 }

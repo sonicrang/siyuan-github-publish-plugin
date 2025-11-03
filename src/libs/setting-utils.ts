@@ -7,7 +7,7 @@
  * @Description  : 
  */
 
-import { Plugin, Setting } from 'siyuan';
+import { Plugin, Setting, showMessage } from 'siyuan';
 
 
 /**
@@ -87,6 +87,7 @@ export class SettingUtils {
         plugin: Plugin,
         name?: string,
         callback?: (data: any) => void,
+        validateCallback?: (data: any) => boolean | void,
         width?: string,
         height?: string
     }) {
@@ -96,16 +97,36 @@ export class SettingUtils {
         this.plugin.setting = new Setting({
             width: args.width,
             height: args.height,
-            confirmCallback: () => {
+            confirmCallback: async () => {
                 for (let key of this.settings.keys()) {
                     this.updateValueFromElement(key);
                 }
                 let data = this.dump();
+                
+                // 验证配置（通过回调函数处理验证逻辑）
+                let shouldSave = true;
+                if (args.validateCallback !== undefined) {
+                    // 调用外部验证回调，期望返回是否允许保存
+                    const validationResult = args.validateCallback(data);
+                    if (validationResult === false) {
+                        shouldSave = false;
+                    }
+                }
+                
+                if (!shouldSave) {
+                    return; // 验证失败，不保存
+                }
+                
                 if (args.callback !== undefined) {
                     args.callback(data);
                 }
                 this.plugin.data[this.name] = data;
-                this.save(data);
+                await this.save(data);
+                
+                // 显示保存成功提示
+                if (typeof showMessage === 'function') {
+                    showMessage("配置保存成功", 3000);
+                }
             },
             destroyCallback: () => {
                 //Restore the original value
@@ -344,6 +365,13 @@ export class SettingUtils {
                 textareaElement.className = "b3-text-field fn__block";
                 textareaElement.value = item.value;
                 textareaElement.onchange = item.action?.callback ?? (() => { });
+                
+                // 为Front matter配置项设置5倍高度
+                if (item.key === "frontMatter") {
+                    textareaElement.style.height = "150px"; // 约5倍于普通输入框高度
+                    textareaElement.style.minHeight = "150px";
+                }
+                
                 itemElement = textareaElement;
                 break;
             case 'number':
@@ -393,5 +421,17 @@ export class SettingUtils {
         if (item.type === 'button') return;
         let element = this.elements.get(key) as any;
         item.setEleVal(element, item.value);
+    }
+
+    /**
+     * 显示验证错误信息
+     */
+    private showValidationError(message: string) {
+        console.error("Validation error:", message);
+        
+        // 使用思源的 showMessage 函数显示错误
+        if (typeof showMessage === 'function') {
+            showMessage(`配置验证失败: ${message}`, 5000, 'error');
+        }
     }
 }

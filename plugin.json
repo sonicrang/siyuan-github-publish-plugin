@@ -1,8 +1,8 @@
 {
-  "name": "plugin-sample-vite",
-  "author": "frostime",
-  "url": "https://github.com/siyuan-note/plugin-sample-vite-svelte",
-  "version": "0.4.1",
+  "name": "siyuan-github-publish-plugin",
+  "author": "YourName",
+  "url": "https://github.com/yourname/siyuan-github-publish-plugin",
+  "version": "0.1.0",
   "minAppVersion": "3.2.1",
   "backends": [
     "windows",
@@ -21,12 +21,12 @@
     "desktop-window"
   ],
   "displayName": {
-    "en_US": "Plugin sample with vite",
-    "zh_CN": "插件样例 vite 版"
+    "en_US": "GitHub Publish Plugin",
+    "zh_CN": "GitHub 发布插件"
   },
   "description": {
-    "en_US": "SiYuan plugin sample with vite",
-    "zh_CN": "使用 vite 开发的思源插件样例"
+    "en_US": "Publish SiYuan notes to GitHub repository",
+    "zh_CN": "将思源笔记发布到 GitHub 仓库"
   },
   "readme": {
     "en_US": "README.md",
@@ -38,8 +38,10 @@
     ]
   },
   "keywords": [
-    "plugin",
-    "sample",
-    "插件样例"
+    "github",
+    "publish",
+    "export",
+    "GitHub发布",
+    "导出"
   ]
 }

@@ -1,240 +1,173 @@
-
-# 使用 vite + svelte 的思源笔记插件示例
+# 思源笔记 GitHub 发布插件
 
 [English](./README.md)
 
+## 1. 项目介绍
 
-> 本例同 [siyuan/plugin-sample](https://github.com/siyuan-note/plugin-sample) [v0.4.1](https://github.com/siyuan-note/plugin-sample/tree/v0.4.1)
- 
-1. 使用 vite 打包
-2. 使用符号链接、而不是把项目放到插件目录下的模式进行开发
-3. 提供一个github action 模板，能自动生成package.zip并上传到新版本中
+一个强大的思源笔记插件，允许您将笔记发布到 GitHub 仓库。笔记和图片存储在同一个目录中，非常适合 GitHub Pages 博客或文档网站。
 
-## 开始
+### ✨ 功能特性
 
-1. 通过 <kbd>Use this template</kbd> 按钮将该库文件复制到你自己的库中，请注意库名和插件名称一致，默认分支必须为 `main`
-2. 将你的库克隆到本地开发文件夹中
-    * 注意: 同 `plugin-sample` 不同, 本样例并不推荐直接把代码下载到 `{workspace}/data/plugins/`
-3. 安装 [NodeJS](https://nodejs.org/en/download) 和 [pnpm](https://pnpm.io/installation)，然后在开发文件夹下执行 `pnpm i` 安装所需要的依赖
-4. 运行 `pnpm run make-link` 命令创建符号链接 (Windows 下的开发者请参阅下方「Windows 下的 make-link」小节)
-5. 执行 `pnpm run dev` 进行实时编译
-6.  在思源中打开集市并在下载选项卡中启用插件
+- **一键发布**: 点击即可将笔记发布到 GitHub
+- **图片处理**: 自动处理并上传图片到与笔记相同的目录
+- **同目录存储**: 笔记和图片存储在一起，便于管理
+- **Front Matter 支持**: 支持自定义 YAML 格式的元数据
+- **自定义域名**: 支持 GitHub Pages 自定义域名
+- **发布历史**: 跟踪和管理已发布的笔记
+- **连接测试**: 内置 GitHub 连接验证功能
+- **多语言支持**: 中文和英文界面
 
-> [!TIP]
-> 你也可以使用我们维护的 [siyuan-plugin-cli](https://www.npmjs.com/package/siyuan-plugin-cli) 命令行工具，在本地终端中直接构建插件。
-> 
-> 此外，对于本插件以下提及到的 `make-link` 相关的命令，后续所有更新将在 [siyuan-plugin-cli](https://www.npmjs.com/package/siyuan-plugin-cli) 中进行。
-> 
-> 模板内置的 `make-link` 脚本也可能会在未来某个版本中移除，转而使用 `siyuan-plugin-cli` 工具，意在简化同时维护多个插件模板的工作量。
+## 2. 配置说明
 
-### 设置 make-link 命令的目标目录
+### GitHub 设置
 
-make-link 命令会创建符号链接将你的 `dev` 目录绑定到思源的插件目录下。你可以有三种方式来配置目标的思源工作空间并创建符号链接:
+在发布之前，需要在插件设置面板中配置 GitHub 设置：
 
-1. **选择工作空间**
-    - 打开思源笔记, 确保思源内核正在运行
-    - 运行 `pnpm run make-link`, 脚本会自动检测所有思源的工作空间, 请在命令行中手动输入序号以选择工作空间
-        ```bash
-        >>> pnpm run make-link
-        > plugin-sample-vite@0.0.3 make-link H:\SrcCode\开源项目\plugin-sample-vite
-        > node  --no-warnings ./scripts/make_dev_link.js
+1. **GitHub 用户名**: 您的 GitHub 用户名
+2. **Access Token**: GitHub Personal Access Token（需要 `repo` 权限）
+   - 创建地址: https://github.com/settings/tokens
+3. **仓库地址**: 格式: `用户名/仓库名`
+4. **分支名称**: 默认: `main`
+5. **基础路径**: 存储路径（例如: `content/posts`）
+6. **自定义域名**: 您的 GitHub Pages 自定义域名（可选）
+7. **Front Matter**: YAML 格式的元数据模板（可选）
 
-        "targetDir" is empty, try to get SiYuan directory automatically....
-        Got 2 SiYuan workspaces
-        [0] H:\Media\SiYuan
-        [1] H:\临时文件夹\SiYuanDevSpace
-        Please select a workspace[0-1]: 0
-        Got target directory: H:\Media\SiYuan/data/plugins
-        Done! Created symlink H:\Media\SiYuan/data/plugins/plugin-sample-vite
-        ```
-2. **手动配置目标目录**
-    - 打开 `./scripts/make_dev_link.js` 文件，更改 `targetDir` 为思源的插件目录 `<siyuan workspace>/data/plugins`
-    - 运行 `pnpm run make-link` 命令, 如果看到类似以下的消息，说明创建成功:
+### Front Matter 模板
 
-3. **设置环境变量创建符号链接**
-    - 设置系统的环境变量 `SIYUAN_PLUGIN_DIR` 为 `工作空间/data/plugins` 的路径
+在 Front Matter 模板中使用占位符：
+- `<TITLE>`: 替换为笔记标题
+- `<DATE>`: 替换为当前日期（YYYY-MM-DD）
 
-
-### Windows 下的 make-link
-
-由于思源升级了 Go 1.23，旧版创建的 junction link 在 windows 下无法被正常识别，故而改为创建 `dir` 符号链接。
-
-> https://github.com/siyuan-note/siyuan/issues/12399
-
-
-不过 Windows 下使用 NodeJs 创建目录符号链接可能需要管理员权限，你可以有如下几种选择:
-
-1. 在具有管理员权限的命令行中运行 `pnpm run make-link`
-2. 配置 Windows 设置，在 [系统设置-更新与安全-开发者模式] 中启用开发者模式，然后再运行 `pnpm run make-link`
-3. 运行 `pnpm run make-link-win`，该命令会使用一个 powershell 脚本来寻求管理员权限，需要在系统中开启 PowerShell 脚本执行权限
-
-
-## 国际化
-
-国际化方面我们主要考虑的是支持多语言，具体需要完成以下工作：
-
-* 插件自身的元信息，比如插件描述和自述文件
-  * plugin.json 中的 `description` 和 `readme` 字段，以及对应的 README*.md 文件
-* 插件中使用的文本，比如按钮文字和提示信息
-  * public/i18n/*.json 语言配置文件
-  * 代码中使用 `this.i18.key` 获取文本
-* 最后在 plugin.json 中的 `i18n` 字段中声明该插件支持的语言
-* yaml 支持
-  * 本模板特别支持基于 Yaml 语法的 I18n，见 `public/i18n/zh_CN.yaml`
-  * 编译时，会自动把定义的 yaml 文件翻译成 json 文件放到 dist 或 dev 目录下
-
-建议插件至少支持英文和简体中文，这样可以方便更多人使用。
-
-## plugin.json
-
-```json
-{
-  "name": "plugin-sample-vite",
-  "author": "frostime",
-  "url": "https://github.com/frostime/plugin-sample-vite",
-  "version": "0.1.3",
-  "minAppVersion": "2.8.8",
-  "backends": ["windows", "linux", "darwin"],
-  "frontends": ["desktop"],
-  "displayName": {
-    "en_US": "Plugin sample with vite and svelte",
-    "zh_CN": "插件样例 vite + svelte 版"
-  },
-  "description": {
-    "en_US": "SiYuan plugin sample with vite and svelte",
-    "zh_CN": "使用 vite 和 svelte 开发的思源插件样例"
-  },
-  "readme": {
-    "en_US": "README_en_US.md",
-    "zh_CN": "README.md"
-  },
-  "funding": {
-    "openCollective": "",
-    "patreon": "",
-    "github": "",
-    "custom": [
-      "https://ld246.com/sponsor"
-    ]
-  },
-  "keywords": [
-    "sample", "示例"
-  ]
-}
+示例：
+```yaml
+---
+title: <TITLE>
+date: <DATE>
+author: 您的姓名
+categories:
+  - 笔记
+---
 ```
 
-* `name`：插件名称，必须和库名一致，且全局唯一（集市中不能有重名插件）
-* `author`：插件作者名
-* `url`：插件仓库地址
-* `version`：插件版本号，建议遵循 [semver](https://semver.org/lang/zh-CN/) 规范
-* `minAppVersion`：插件支持的最低思源笔记版本号
-* `backends`：插件需要的后端环境，可选值为 `windows`, `linux`, `darwin`, `docker`, `android`, `ios` and `all`
-  * `windows`：Windows 桌面端
-  * `linux`：Linux 桌面端
-  * `darwin`：macOS 桌面端
-  * `docker`：Docker 端
-  * `android`：Android 端
-  * `ios`：iOS 端
-  * `all`：所有环境
-* `frontends`：插件需要的前端环境，可选值为 `desktop`, `desktop-window`, `mobile`, `browser-desktop`, `browser-mobile` and `all`
-  * `desktop`：桌面端
-  * `desktop-window`：桌面端页签转换的独立窗口
-  * `mobile`：移动端
-  * `browser-desktop`：桌面端浏览器
-  * `browser-mobile`：移动端浏览器
-  * `all`：所有环境
-* `displayName`：模板显示名称，主要用于模板集市列表中显示，支持多语言
-  * `default`：默认语言，必须存在
-  * `zh_CN`、`en_US` 等其他语言：可选，建议至少提供中文和英文
-* `description`：插件描述，主要用于插件集市列表中显示，支持多语言
-  * `default`：默认语言，必须存在
-  * `zh_CN`、`en_US` 等其他语言：可选，建议至少提供中文和英文
-* `readme`：自述文件名，主要用于插件集市详情页中显示，支持多语言
-  * `default`：默认语言，必须存在
-  * `zh_CN`、`en_US` 等其他语言：可选，建议至少提供中文和英文
-* `funding`：插件赞助信息
-  * `openCollective`：Open Collective 名称
-  * `patreon`：Patreon 名称
-  * `github`：GitHub 登录名
-  * `custom`：自定义赞助链接列表
-* `keywords`：搜索关键字列表，用于集市搜索功能
+## 3. 使用方法
 
-## 打包
+### 发布笔记
 
-无论使用何种方式编译打包，我们最终需要生成一个 package.zip，它至少包含如下文件：
+1. 在思源中打开要发布的笔记
+2. 点击顶部工具栏的 GitHub 图标
+3. 选择"发布当前笔记"
+4. 输入上传目录名称
+5. 查看 Front Matter（如果已配置）
+6. 点击"发布"
 
-* i18n/*
-* icon.png (160*160)
-* index.css
-* index.js
-* plugin.json
-* preview.png (1024*768)
-* README*.md
+### 管理已发布的笔记
 
-## 上架集市
+- **查看已发布笔记**: 点击 GitHub 图标查看发布历史
+- **在 GitHub 中打开**: 点击 markdown URL 在浏览器中打开
+- **删除发布内容**: 使用"删除发布"选项从 GitHub 移除
 
-* 执行 `pnpm run build` 生成 package.zip
-* 在 GitHub 上创建一个新的发布，使用插件版本号作为 “Tag
-  version”，示例 https://github.com/siyuan-note/plugin-sample/releases
-* 上传 package.zip 作为二进制附件
-* 提交发布
+## 4. 文件结构
 
-如果是第一次发布版本，还需要创建一个 PR 到 [Community Bazaar](https://github.com/siyuan-note/bazaar) 社区集市仓库，修改该库的
-plugins.json。该文件是所有社区插件库的索引，格式为：
-
-```json
-{
-  "repos": [
-    "username/reponame"
-  ]
-}
+发布后，每个笔记会创建如下的目录结构：
+```
+content/posts/
+└── 笔记标题/
+    ├── index.md          # 笔记内容
+    ├── image1.png        # 嵌入的图片
+    ├── image2.jpg        # 嵌入的图片
+    └── ...               # 其他资源文件
 ```
 
-PR 被合并以后集市会通过 GitHub Actions 自动更新索引并部署。后续发布新版本插件时只需要按照上述步骤创建新的发布即可，不需要再
-PR 社区集市仓库。
+所有文件都存储在同一个目录中，便于管理，非常适合静态网站生成器如 Jekyll、Hugo 或 GitHub Pages。
 
-正常情况下，社区集市仓库每隔 1 小时会自动更新索引并部署，可在 https://github.com/siyuan-note/bazaar/actions 查看部署状态。
+## 5. 开发指南
 
-## 使用 Github action 自动发布
+### 前置要求
 
-样例中自带了 github action，可以自动打包发布，请遵循以下操作：
+- [Node.js](https://nodejs.org/) (v16 或更高版本)
+- [pnpm](https://pnpm.io/) 包管理器
+- 思源笔记 v3.2.1 或更高版本
 
-1. 设置项目 `https://github.com/OWNER/REPO/settings/actions` 页面向下划到 **Workflow Permissions**，打开配置
+### 从源代码构建
 
-    ![](asset/action.png)
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/yourname/siyuan-github-publish-plugin.git
+   cd siyuan-github-publish-plugin
+   ```
 
-2. 需要发布版本的时候，push 一个格式为 `v*` 的 tag，github 就会自动打包发布 release（包括 package.zip）
+2. **安装依赖**
+   ```bash
+   pnpm install
+   ```
 
-3. 默认使用保守策略进行 pre-release 发布，如果觉得没有必要，可以更改 release.yml 中的设置：
+3. **创建到思源插件目录的符号链接**
+   ```bash
+   pnpm run make-link
+   ```
 
-    ```yaml
-    - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-            allowUpdates: true
-            artifactErrorsFailBuild: true
-            artifacts: 'package.zip'
-            token: ${{ secrets.GITHUB_TOKEN }}
-            prerelease: true # 把这个改为 false
-    ```
+4. **启动开发模式**
+   ```bash
+   pnpm run dev
+   ```
 
+5. **在思源中启用插件**
+   - 打开思源笔记
+   - 进入设置 → 社区集市 → 已下载
+   - 启用 "GitHub 发布插件"
 
-## 开发者须知
+### 项目结构
 
-思源开发者需注意以下规范。
+```
+src/
+├── index.ts          # 主插件类
+├── libs/
+│   ├── github-api.ts # GitHub API 封装
+│   ├── settings.ts   # 设置管理
+│   ├── content-processor.ts # Markdown 内容处理
+│   └── dialog.ts     # 对话框工具
+├── types/
+│   └── github.d.ts   # TypeScript 类型定义
+└── index.scss        # 样式文件
+```
 
-### 1. 读写文件规范
+### 构建命令
 
-插件或者外部扩展如果有直接读取或者写入 data 下文件的需求，请通过调用内核 API 来实现，**不要自行调用 `fs` 或者其他 electron、nodejs API**，否则可能会导致数据同步时分块丢失，造成云端数据损坏。
+```bash
+# 开发模式（热重载）
+pnpm run dev
 
-相关 API 见 `/api/file/*`（例如 `/api/file/getFile` 等）。
+# 生产构建
+pnpm run build
 
-### 2. Daily Note 属性规范
+# 创建符号链接
+pnpm run make-link
 
-思源在创建日记的时候会自动为文档添加 custom-dailynote-yyyymmdd 属性，以方便将日记文档同普通文档区分。
+# 创建安装包
+pnpm run make-install
 
-> 详情请见 [Github Issue #9807](https://github.com/siyuan-note/siyuan/issues/9807)。
+# 更新版本
+pnpm run update-version
+```
 
-开发者在开发手动创建 Daily Note 的功能时请注意：
+## 6. 常见问题
 
-* 如果调用了 `/api/filetree/createDailyNote` 创建日记，那么文档会自动添加这个属性，无需开发者特别处理
-* 如果是开发者代码手动创建文档（例如使用 `createDocWithMd` API 创建日记），请手动为文档添加该属性
+### 常见问题
+
+1. **认证失败**
+   - 确保 GitHub Access Token 有 `repo` 权限
+   - 检查 token 是否已过期
+
+2. **仓库不存在**
+   - 验证仓库格式: `用户名/仓库名`
+   - 确保您有仓库的写入权限
+
+3. **分支不存在**
+   - 检查分支是否存在于您的仓库中
+   - 默认分支通常是 `main` 或 `master`
+
+4. **图片上传失败**
+   - 检查网络连接
+   - 验证仓库权限
+
+**注意**: 本插件需要具有仓库写入权限的 GitHub Personal Access Token。请勿公开分享您的 token。

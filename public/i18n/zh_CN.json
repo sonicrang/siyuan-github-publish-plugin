@@ -1,20 +1,41 @@
 {
-    "addTopBarIcon": "使用插件添加一个顶栏按钮",
+    "pluginName": "GitHub 发布插件",
+    "pluginDescription": "将思源笔记发布到 GitHub 仓库",
+    
+    "publishToGitHub": "发布到 GitHub",
+    "publishCurrentNote": "发布当前笔记",
+    "pluginSettings": "插件设置",
+    "help": "使用帮助",
+    
+    "githubUsername": "GitHub 用户名",
+    "accessToken": "Access Token",
+    "repository": "仓库地址",
+    "branch": "分支名称",
+    "basePath": "基础路径",
+    
+    "testConnection": "测试连接",
+    "connectionSuccess": "连接测试成功！配置有效。",
+    "connectionFailed": "连接测试失败",
+    
+    "publishSuccess": "发布成功！",
+    "publishFailed": "发布失败",
+    "configIncomplete": "配置不完整",
+    "pleaseOpenNote": "请先打开一篇笔记",
+    
+    "enterFileName": "输入文件名",
+    "fileName": "文件名",
+    "confirm": "确认",
     "cancel": "取消",
-    "save": "保存",
-    "byeMenu": "再见，菜单！",
-    "helloPlugin": "你好，插件！",
-    "byePlugin": "再见，插件！",
-    "showDialog": "弹出一个对话框",
-    "removedData": "数据已删除",
-    "confirmRemove": "确认删除 ${name} 中的数据？",
-    "insertEmoji": "插入表情",
-    "removeSpace": "移除空格",
-    "getTab": "在日志中打印出已打开的所有自定义页签",
-    "name": "思源",
-    "hello": {
-        "makesure": "使用这个模板之前，请阅读<a href=\"https://github.com/siyuan-note/plugin-sample\">官方教程</a>, 确保自己已经理解了插件的基本开发流程。"
-    },
-    "hintTitle": "关于",
-    "hintDesc": "<a href='https://github.com/siyuan-note/plugin-sample-vite-svelte'>🔗 plugin-sample-vite-svelte</a><br>💻 @frostime<br>💻 @88250<br>💻 @zxkmm"
+    
+    "helpTitle": "使用说明",
+    "helpContent": "1. 首先在设置中配置您的 GitHub 信息<br>2. 打开要发布的笔记<br>3. 点击发布按钮选择\"发布当前笔记\"<br>4. 输入文件名并确认<br>5. 插件会自动处理图片并上传到 GitHub",
+    "importantNote": "<strong>注意：</strong>需要 GitHub Personal Access Token 的 repo 权限",
+    
+    "validationErrors": {
+        "usernameRequired": "GitHub 用户名不能为空",
+        "tokenRequired": "Access Token 不能为空",
+        "repoRequired": "仓库地址不能为空",
+        "repoFormat": "仓库地址格式不正确，应为 username/repo",
+        "branchRequired": "分支名称不能为空"
+    }
 }
