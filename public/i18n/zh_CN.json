@@ -22,13 +22,9 @@
     "configIncomplete": "配置不完整",
     "pleaseOpenNote": "请先打开一篇笔记",
     
-    "enterFileName": "输入文件名",
-    "fileName": "文件名",
-    "confirm": "确认",
+    "enterFileName": "请输入上传目录名",
     "cancel": "取消",
     
-    "helpTitle": "使用说明",
-    "helpContent": "1. 首先在设置中配置您的 GitHub 信息<br>2. 打开要发布的笔记<br>3. 点击发布按钮选择\"发布当前笔记\"<br>4. 输入文件名并确认<br>5. 插件会自动处理图片并上传到 GitHub",
     "importantNote": "<strong>注意：</strong>需要 GitHub Personal Access Token 的 repo 权限",
     
     "validationErrors": {
@@ -42,17 +38,12 @@
     "uninstall": "已卸载",
     "allDataRemoved": "所有数据已删除",
     
-    "pleaseOpenNote": "请先打开一篇笔记",
-    "configIncomplete": "配置不完整",
     "exportingNote": "导出笔记",
     "processingImages": "处理图片",
     "uploadingNote": "上传笔记",
-    "publishSuccess": "发布成功！",
-    "publishFailed": "发布失败",
     "deletingPublish": "删除发布",
     "deleteSuccess": "删除成功！",
     "deleteFailed": "删除失败",
-    "enterFileName": "请输入上传目录名",
     "configSaved": "配置保存成功",
     "configValidationFailed": "配置验证失败",
     "configError": "配置错误",
@@ -60,20 +51,16 @@
     "authFailed": "认证失败",
     "repoAccessFailed": "仓库访问失败",
     "branchAccessFailed": "分支访问失败",
-    "connectionSuccess": "连接测试成功！配置有效。",
-    "connectionFailed": "连接测试失败",
     
-    "folderName": "上传目录",
     "uploadFolder": "上传目录",
     "frontMatter": "Front Matter 元数据",
     "deleteConfirmation": "确认删除",
     "deleteConfirmMessage": "确定要从 GitHub 删除笔记 \"{noteTitle}\" 的发布内容吗？",
     "deleteWarning": "此操作将删除 GitHub 上的文件，不可撤销。",
     "confirmDelete": "确认删除",
-    "cancel": "取消",
     
-    "uploadTo": "上传路径",
-    "publishAs": "发布路径",
+    "uploadTo": "上传地址",
+    "publishAs": "发布地址",
     
     "feedback": "问题反馈"
 }

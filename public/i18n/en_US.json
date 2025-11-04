@@ -22,13 +22,9 @@
     "configIncomplete": "Configuration incomplete",
     "pleaseOpenNote": "Please open a note first",
     
-    "enterFileName": "Enter file name",
-    "fileName": "File name",
-    "confirm": "Confirm",
+    "enterFileName": "Please enter file name",
     "cancel": "Cancel",
     
-    "helpTitle": "Usage Instructions",
-    "helpContent": "1. First configure your GitHub information in settings<br>2. Open the note you want to publish<br>3. Click the publish button and select \"Publish Current Note\"<br>4. Enter the file name and confirm<br>5. The plugin will automatically process images and upload to GitHub",
     "importantNote": "<strong>Note:</strong> GitHub Personal Access Token with repo permissions is required",
     
     "validationErrors": {
@@ -42,17 +38,12 @@
     "uninstall": "uninstalled",
     "allDataRemoved": "all data has been removed",
     
-    "pleaseOpenNote": "Please open a note first",
-    "configIncomplete": "Configuration incomplete",
     "exportingNote": "Exporting note",
     "processingImages": "Processing images",
     "uploadingNote": "Uploading note",
-    "publishSuccess": "Publish successful!",
-    "publishFailed": "Publish failed",
     "deletingPublish": "Deleting publish",
     "deleteSuccess": "Delete successful!",
     "deleteFailed": "Delete failed",
-    "enterFileName": "Please enter file name",
     "configSaved": "Configuration saved successfully",
     "configValidationFailed": "Configuration validation failed",
     "configError": "Configuration error",
@@ -60,17 +51,13 @@
     "authFailed": "Authentication failed",
     "repoAccessFailed": "Repository access failed",
     "branchAccessFailed": "Branch access failed",
-    "connectionSuccess": "Connection test successful! Configuration is valid.",
-    "connectionFailed": "Connection test failed",
     
-    "folderName": "Folder name",
     "uploadFolder": "Upload folder",
     "frontMatter": "Front Matter",
     "deleteConfirmation": "Delete confirmation",
     "deleteConfirmMessage": "Are you sure you want to delete the published content of note \"{noteTitle}\" from GitHub?",
     "deleteWarning": "This operation will delete files on GitHub and cannot be undone.",
     "confirmDelete": "Confirm delete",
-    "cancel": "Cancel",
     
     "uploadTo": "Upload Path",
     "publishAs": "Publish Path",
