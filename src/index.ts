@@ -56,7 +56,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 添加上方工具栏按钮
         this.topBarElement = this.addTopBar({
             icon: "iconGitHub",
-            title: "发布到 GitHub",
+            title: this.i18n.publishToGitHub,
             position: "right",
             callback: () => {
                 this.showPublishMenu();
@@ -72,7 +72,37 @@ export default class GitHubPublishPlugin extends Plugin {
 
     async onunload() {
         console.log("unloading GitHub Publish Plugin");
-        showMessage("GitHub 发布插件已卸载");
+        showMessage(this.i18n.pluginName + " " + window.siyuan.languages.uninstall);
+    }
+
+    /**
+     * 插件卸载时调用，删除所有插件保存的数据
+     */
+    async uninstall() {
+        console.log("uninstalling GitHub Publish Plugin");
+        await this.cleanupPluginData();
+        showMessage(this.i18n.pluginName + " " + window.siyuan.languages.uninstall + ", " + window.siyuan.languages.allDataRemoved);
+    }
+
+    /**
+     * 清理插件保存的所有数据文件
+     */
+    private async cleanupPluginData() {
+        try {
+            console.log("Cleaning up all plugin data...");
+            
+            // 删除发布记录数据
+            await this.removeData(PUBLISH_RECORDS_STORAGE);
+            console.log("Publish records removed");
+            
+            // 删除配置数据
+            await this.removeData(STORAGE_NAME);
+            console.log("Configuration data removed");
+            
+            console.log("All plugin data cleaned up successfully");
+        } catch (error) {
+            console.error("Failed to cleanup plugin data:", error);
+        }
     }
 
     /**
@@ -89,7 +119,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 发布菜单项
         menu.addItem({
             icon: "iconPublish",
-            label: "发布当前笔记",
+            label: this.i18n.publishCurrentNote,
             click: () => {
                 this.publishCurrentNote();
             }
@@ -137,7 +167,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 设置菜单项
         menu.addItem({
             icon: "iconSettings",
-            label: "插件设置",
+            label: this.i18n.pluginSettings,
             click: () => {
                 this.settings.openSettings();
             }
@@ -149,7 +179,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 帮助菜单项
         menu.addItem({
             icon: "iconHelp",
-            label: "使用帮助",
+            label: this.i18n.help,
             click: () => {
                 window.open("https://github.com/sonicrang/siyuan-github-publish-plugin", "_blank");
             }
@@ -158,7 +188,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 问题反馈菜单项
         menu.addItem({
             icon: "iconFeedback",
-            label: "问题反馈",
+            label: this.i18n.feedback,
             click: () => {
                 window.open("https://github.com/sonicrang/siyuan-github-publish-plugin/issues/new", "_blank");
             }
@@ -184,7 +214,7 @@ export default class GitHubPublishPlugin extends Plugin {
             // 获取当前编辑器
             const editor = this.getCurrentEditor();
             if (!editor) {
-                showMessage("请先打开一篇笔记", 3000, "error");
+                showMessage(this.i18n.pleaseOpenNote, 3000, "error");
                 return;
             }
 
@@ -197,7 +227,7 @@ export default class GitHubPublishPlugin extends Plugin {
             const validation = this.settings.validateConfig(config);
 
             if (!validation.isValid) {
-                showMessage(`配置不完整: ${validation.errors.join(", ")}`, 5000, "error");
+                showMessage(`${this.i18n.configIncomplete}: ${validation.errors.join(", ")}`, 5000, "error");
                 this.settings.openSettings();
                 return;
             }
@@ -210,13 +240,13 @@ export default class GitHubPublishPlugin extends Plugin {
             const { folderName, frontMatter } = publishResult;
 
             // 显示进度提示
-            showMessage("导出笔记...", 3000, "info");
+            showMessage(this.i18n.exportingNote, 3000, "info");
 
             // 获取 Markdown 内容
             const markdownContent = await this.getNoteMarkdown(noteId);
             
             // 更新进度提示
-            showMessage("处理图片...", 3000, "info");
+            showMessage(this.i18n.processingImages, 3000, "info");
             
             // 处理图片
             const processedContent = await ContentProcessor.processMarkdownImages(markdownContent, noteId);
@@ -226,7 +256,7 @@ export default class GitHubPublishPlugin extends Plugin {
             
             // 更新进度提示（批量上传只需要一个进度提示）
             const updateProgress = () => {
-                showMessage("上传笔记...", 3000, "info");
+                showMessage(this.i18n.uploadingNote, 3000, "info");
             };
             
             await this.publishToGitHub(config, folderName, processedContent, updateProgress, frontMatter);
@@ -237,12 +267,12 @@ export default class GitHubPublishPlugin extends Plugin {
 
             // 等待一段时间确保之前的进度提示消失
             await new Promise(resolve => setTimeout(resolve, 1000));
-            showMessage("发布成功！", 3000);
+            showMessage(this.i18n.publishSuccess, 3000);
             console.log("Success message displayed");
 
         } catch (error) {
             console.error("Publish failed:", error);
-            showMessage(`发布失败: ${error.message}`, 5000, "error");
+            showMessage(`${this.i18n.publishFailed}: ${error.message}`, 5000, "error");
         } finally {
             // 确保无论成功还是失败都清除进度提示
             // 思源笔记的 showMessage 会自动清除之前的消息
@@ -257,16 +287,16 @@ export default class GitHubPublishPlugin extends Plugin {
             // 使用自定义确认对话框
             const userConfirmed = await new Promise<boolean>((resolve) => {
                 const dialog = new Dialog({
-                    title: "确认删除",
+                    title: this.i18n.deleteConfirmation,
                     content: `
                         <div class="b3-dialog__content">
-                            <p>确定要从 GitHub 删除笔记 "${publishRecord.noteTitle}" 的发布内容吗？</p>
-                            <p class="fn__secondary">此操作将删除 GitHub 上的文件，不可撤销。</p>
+                            <p>${this.i18n.deleteConfirmMessage.replace("{noteTitle}", publishRecord.noteTitle)}</p>
+                            <p class="fn__secondary">${this.i18n.deleteWarning}</p>
                         </div>
                         <div class="b3-dialog__action">
-                            <button class="b3-button b3-button--cancel" id="cancelDeleteBtn">取消</button>
+                            <button class="b3-button b3-button--cancel" id="cancelDeleteBtn">${this.i18n.cancel}</button>
                             <div class="fn__space"></div>
-                            <button class="b3-button b3-button--text b3-button--error" id="confirmDeleteBtn">确认删除</button>
+                            <button class="b3-button b3-button--text b3-button--error" id="confirmDeleteBtn">${this.i18n.confirmDelete}</button>
                         </div>
                     `,
                     width: "500px"
@@ -290,7 +320,7 @@ export default class GitHubPublishPlugin extends Plugin {
                 return;
             }
 
-            showMessage("删除发布...", 3000, "info");
+            showMessage(this.i18n.deletingPublish, 3000, "info");
 
             const config = this.settings.getConfig();
             const [owner, repo] = config.repository.split('/');
@@ -317,12 +347,12 @@ export default class GitHubPublishPlugin extends Plugin {
             // 保存更新后的发布记录
             await this.savePublishRecordsToStorage();
 
-            showMessage("删除成功！", 3000);
+            showMessage(this.i18n.deleteSuccess, 3000);
             console.log("Publish deletion completed successfully");
 
         } catch (error) {
             console.error("Delete publish failed:", error);
-            showMessage(`删除失败: ${error.message}`, 5000, "error");
+            showMessage(`${this.i18n.deleteFailed}: ${error.message}`, 5000, "error");
         }
     }
 
@@ -416,31 +446,31 @@ export default class GitHubPublishPlugin extends Plugin {
     private async showPublishDialog(noteTitle: string, config: GitHubConfig): Promise<{ folderName: string; frontMatter?: string } | null> {
         return new Promise((resolve) => {
             const dialog = new Dialog({
-                title: "发布到 GitHub",
+                title: this.i18n.publishToGitHub,
                 content: `
                     <div class="b3-dialog__content">
                         <div class="b3-label" style="display: flex; align-items: center; gap: 8px;">
-                            <span>上传目录：</span>
+                            <span>${this.i18n.uploadFolder}：</span>
                             <input type="text" id="fileNameInput"
                                    value="${noteTitle}"
                                    class="b3-text-field"
-                                   placeholder="请输入上传目录名" style="flex: 1;">
+                                   placeholder="${this.i18n.enterFileName}" style="flex: 1;">
                         </div>
                         ${config.frontMatter && config.frontMatter.trim() ? `
                         <div class="b3-label" style="margin-top: 8px;">
-                            <span>Front Matter：</span>
+                            <span>${this.i18n.frontMatter}：</span>
                             <textarea id="frontMatterInput" style="margin-top: 8px; padding: 12px; background: var(--b3-theme-surface-light); border-radius: 4px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; width: 100%; min-height: 100px; resize: vertical;"></textarea>
                         </div>
                         ` : ''}
                         <div class="b3-label fn__secondary" style="margin-top: 8px; font-size: 12px; color: var(--b3-theme-on-surface-light);" id="filePathPreview">
-                            上传至: github.com/${config.repository}/${config.basePath}/${noteTitle}/index.md
-                            ${config.customDomain ? `<br>发布为: ${config.customDomain}/${noteTitle}` : ''}
+                            ${this.i18n.uploadTo}: github.com/${config.repository}/${config.basePath}/${noteTitle}/index.md
+                            ${config.customDomain ? `<br>${this.i18n.publishAs}: ${config.customDomain}/${noteTitle}` : ''}
                         </div>
                     </div>
                     <div class="b3-dialog__action">
-                        <button class="b3-button b3-button--cancel" id="cancelBtn">取消</button>
+                        <button class="b3-button b3-button--cancel" id="cancelBtn">${this.i18n.cancel}</button>
                         <div class="fn__space"></div>
-                        <button class="b3-button b3-button--text" id="publishBtn">发布</button>
+                        <button class="b3-button b3-button--text" id="publishBtn">${this.i18n.publishToGitHub}</button>
                     </div>
                 `,
                 width: "640px"
@@ -506,7 +536,7 @@ export default class GitHubPublishPlugin extends Plugin {
                     dialog.destroy();
                     resolve({ folderName: fileName, frontMatter: userFrontMatter });
                 } else {
-                    showMessage("请输入上传目录名", 3000, "error");
+                    showMessage(this.i18n.enterFileName, 3000, "error");
                 }
             });
         });

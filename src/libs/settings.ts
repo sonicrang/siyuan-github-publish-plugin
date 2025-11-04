@@ -10,15 +10,17 @@ import type { GitHubConfig } from "../types/github";
 class GitHubSettings {
     private settingUtils: SettingUtils;
     private storageName = "github-publish-config";
+    private plugin: any;
 
     constructor(plugin: any) {
+        this.plugin = plugin;
         this.settingUtils = new SettingUtils({
             plugin: plugin,
             name: this.storageName,
             validateCallback: (data) => {
                 const validation = this.validateConfig(data);
                 if (!validation.isValid) {
-                    this.showMessage(`配置验证失败: ${validation.errors.join(", ")}`, "error");
+                    this.showMessage(`${this.plugin.i18n.configValidationFailed}: ${validation.errors.join(", ")}`, "error");
                     return false; // 验证失败，阻止保存
                 }
                 return true; // 验证成功，允许保存
@@ -34,9 +36,9 @@ class GitHubSettings {
             key: "githubUsername",
             value: "",
             type: "textinput",
-            title: "GitHub 用户名<span style=\"color: red;\">*</span>",
-            description: "您的 GitHub 用户名",
-            placeholder: "请输入 GitHub 用户名",
+            title: this.plugin.i18n.githubUsername + "<span style=\"color: red;\">*</span>",
+            description: this.plugin.i18n.githubUsername,
+            placeholder: this.plugin.i18n.githubUsername,
             action: {
                 callback: () => {
                     this.saveSetting("githubUsername");
@@ -48,9 +50,9 @@ class GitHubSettings {
             key: "accessToken",
             value: "",
             type: "textinput",
-            title: "GitHub Access Token<span style=\"color: red;\">*</span>",
-            description: `<a href="https://github.com/settings/tokens" target="_blank" style="color: var(--b3-theme-primary); text-decoration: underline;">GitHub Personal Access Token</a>，需要 repo 权限`,
-            placeholder: "请输入 GitHub Access Token",
+            title: this.plugin.i18n.accessToken + "<span style=\"color: red;\">*</span>",
+            description: `<a href="https://github.com/settings/tokens" target="_blank" style="color: var(--b3-theme-primary); text-decoration: underline;">GitHub Personal Access Token</a> ${this.plugin.i18n.importantNote.replace("<strong>Note:</strong>", "")}`,
+            placeholder: this.plugin.i18n.accessToken,
             action: {
                 callback: () => {
                     this.saveSetting("accessToken");
@@ -62,9 +64,9 @@ class GitHubSettings {
             key: "repository",
             value: "",
             type: "textinput",
-            title: "仓库地址<span style=\"color: red;\">*</span>",
-            description: "格式: username/repository",
-            placeholder: "例如: yourname/your-repo",
+            title: this.plugin.i18n.repository + "<span style=\"color: red;\">*</span>",
+            description: this.plugin.i18n.validationErrors.repoFormat,
+            placeholder: this.plugin.i18n.validationErrors.repoFormat.replace("应为 ", ""),
             action: {
                 callback: () => {
                     this.saveSetting("repository");
@@ -76,9 +78,9 @@ class GitHubSettings {
             key: "branch",
             value: "main",
             type: "textinput",
-            title: "分支名称<span style=\"color: red;\">*</span>",
-            description: "GitHub 仓库分支",
-            placeholder: "默认为 main",
+            title: this.plugin.i18n.branch + "<span style=\"color: red;\">*</span>",
+            description: this.plugin.i18n.branch,
+            placeholder: this.plugin.i18n.branch,
             action: {
                 callback: () => {
                     this.saveSetting("branch");
@@ -90,9 +92,9 @@ class GitHubSettings {
             key: "basePath",
             value: "content/posts",
             type: "textinput",
-            title: "存储路径",
-            description: "文件存储的基础路径",
-            placeholder: "例如: content/posts",
+            title: this.plugin.i18n.basePath,
+            description: this.plugin.i18n.basePath,
+            placeholder: this.plugin.i18n.basePath,
             action: {
                 callback: () => {
                     this.saveSetting("basePath");
@@ -104,9 +106,9 @@ class GitHubSettings {
             key: "customDomain",
             value: "",
             type: "textinput",
-            title: "自定义域名",
-            description: "笔记网站的自定义域名，如 https://example.github.com",
-            placeholder: "例如: https://example.github.com",
+            title: this.plugin.i18n.customDomain || "Custom Domain",
+            description: this.plugin.i18n.customDomain || "Custom domain for your notes website",
+            placeholder: this.plugin.i18n.customDomain || "e.g., https://example.github.com",
             action: {
                 callback: () => {
                     this.saveSetting("customDomain");
@@ -118,9 +120,9 @@ class GitHubSettings {
             key: "frontMatter",
             value: "",
             type: "textarea",
-            title: "Front Matter 元数据",
-            description: "在Markdown文件前添加元数据，支持YAML格式。",
-            placeholder: "输入YAML格式的Front matter内容",
+            title: this.plugin.i18n.frontMatter || "Front Matter",
+            description: this.plugin.i18n.frontMatter || "Add metadata in YAML format at the beginning of Markdown files",
+            placeholder: this.plugin.i18n.frontMatter || "Enter YAML front matter content",
             action: {
                 callback: () => {
                     this.saveSetting("frontMatter");
@@ -132,10 +134,10 @@ class GitHubSettings {
             key: "testConnection",
             value: "",
             type: "button",
-            title: "测试连接",
-            description: "测试 GitHub 配置是否有效",
+            title: this.plugin.i18n.testConnection,
+            description: this.plugin.i18n.testConnection,
             button: {
-                label: "测试连接",
+                label: this.plugin.i18n.testConnection,
                 callback: () => {
                     this.testConnection();
                 }
@@ -177,10 +179,10 @@ class GitHubSettings {
      */
     private getFieldName(key: string): string {
         const fieldNames: Record<string, string> = {
-            "githubUsername": "GitHub 用户名",
-            "accessToken": "GitHub Access Token",
-            "repository": "仓库地址",
-            "branch": "分支名称"
+            "githubUsername": this.plugin.i18n.githubUsername,
+            "accessToken": this.plugin.i18n.accessToken,
+            "repository": this.plugin.i18n.repository,
+            "branch": this.plugin.i18n.branch
         };
         return fieldNames[key] || key;
     }
@@ -241,21 +243,21 @@ class GitHubSettings {
         const branch = config.branch;
 
         if (!username) {
-            errors.push("GitHub 用户名不能为空");
+            errors.push(this.plugin.i18n.validationErrors.usernameRequired);
         }
 
         if (!accessToken) {
-            errors.push("Access Token 不能为空");
+            errors.push(this.plugin.i18n.validationErrors.tokenRequired);
         }
 
         if (!repository) {
-            errors.push("仓库地址不能为空");
+            errors.push(this.plugin.i18n.validationErrors.repoRequired);
         } else if (!this.isValidRepositoryFormat(repository)) {
-            errors.push("仓库地址格式不正确，应为 username/repo");
+            errors.push(this.plugin.i18n.validationErrors.repoFormat);
         }
 
         if (!branch) {
-            errors.push("分支名称不能为空");
+            errors.push(this.plugin.i18n.validationErrors.branchRequired);
         }
 
         return {
@@ -293,12 +295,12 @@ class GitHubSettings {
         const validation = this.validateConfig(config);
 
         if (!validation.isValid) {
-            this.showMessage(`配置错误: ${validation.errors.join(", ")}`, "error");
+            this.showMessage(`${this.plugin.i18n.configError}: ${validation.errors.join(", ")}`, "error");
             return;
         }
 
         try {
-            this.showMessage("正在测试连接...", "info");
+            this.showMessage(this.plugin.i18n.testingConnection, "info");
 
             const [owner, repo] = config.repository.split('/');
             const githubAPI = new GitHubAPI(config.accessToken);
@@ -306,28 +308,28 @@ class GitHubSettings {
             // 测试认证
             const authResult = await githubAPI.verifyAuth();
             if (authResult.error) {
-                this.showMessage(`认证失败: ${authResult.error}`, "error");
+                this.showMessage(`${this.plugin.i18n.authFailed}: ${authResult.error}`, "error");
                 return;
             }
 
             // 测试仓库访问
             const repoResult = await githubAPI.verifyRepo(owner, repo);
             if (repoResult.error) {
-                this.showMessage(`仓库访问失败: ${repoResult.error}`, "error");
+                this.showMessage(`${this.plugin.i18n.repoAccessFailed}: ${repoResult.error}`, "error");
                 return;
             }
 
             // 测试分支访问
             const branchResult = await githubAPI.verifyBranch(owner, repo, config.branch);
             if (branchResult.error) {
-                this.showMessage(`分支访问失败: ${branchResult.error}`, "error");
+                this.showMessage(`${this.plugin.i18n.branchAccessFailed}: ${branchResult.error}`, "error");
                 return;
             }
 
-            this.showMessage("连接测试成功！配置有效。", "success");
+            this.showMessage(this.plugin.i18n.connectionSuccess, "success");
 
         } catch (error) {
-            this.showMessage(`连接测试失败: ${error.message}`, "error");
+            this.showMessage(`${this.plugin.i18n.connectionFailed}: ${error.message}`, "error");
         }
     }
 

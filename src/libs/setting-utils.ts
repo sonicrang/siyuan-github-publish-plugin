@@ -125,7 +125,7 @@ export class SettingUtils {
                 
                 // 显示保存成功提示
                 if (typeof showMessage === 'function') {
-                    showMessage("配置保存成功", 3000);
+                    showMessage(this.plugin.i18n.configSaved, 3000);
                 }
             },
             destroyCallback: () => {
@@ -431,7 +431,7 @@ export class SettingUtils {
         
         // 使用思源的 showMessage 函数显示错误
         if (typeof showMessage === 'function') {
-            showMessage(`配置验证失败: ${message}`, 5000, 'error');
+            showMessage(`${this.plugin.i18n.configValidationFailed}: ${message}`, 5000, 'error');
         }
     }
 }
