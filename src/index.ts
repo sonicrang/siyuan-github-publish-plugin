@@ -26,6 +26,27 @@ import type { GitHubConfig, ImageInfo, PublishRecord, PublishRecords } from "./t
 const STORAGE_NAME = "github-publish-config.json";
 const PUBLISH_RECORDS_STORAGE = "github-publish-records.json";
 
+/**
+ * 辅助函数：规范化路径拼接，处理 basePath 为空或为 / 的情况
+ */
+function joinPath(basePath: string, ...parts: string[]): string {
+    // 移除 basePath 前后的斜杠
+    let normalizedBasePath = basePath.replace(/^\/+|\/+$/g, '');
+    
+    // 过滤掉空的路径部分，并移除前后斜杠
+    const normalizedParts = parts
+        .filter(part => part !== null && part !== undefined && part !== '')
+        .map(part => part.replace(/^\/+|\/+$/g, ''));
+    
+    // 如果 basePath 为空，直接连接其他部分
+    if (!normalizedBasePath) {
+        return normalizedParts.join('/');
+    }
+    
+    // 拼接所有部分
+    return [normalizedBasePath, ...normalizedParts].filter(p => p).join('/');
+}
+
 export default class GitHubPublishPlugin extends Plugin {
     private settings: GitHubSettings;
     private isMobile: boolean;
@@ -310,7 +331,7 @@ export default class GitHubPublishPlugin extends Plugin {
             const githubAPI = new GitHubAPI(config.accessToken);
 
             // 删除整个笔记目录（包括Markdown文件和图片）
-            const noteDirectoryPath = `${config.basePath}/${publishRecord.folderName}`;
+            const noteDirectoryPath = joinPath(config.basePath, publishRecord.folderName);
             const deleteResult = await githubAPI.deleteDirectory(
                 owner,
                 repo,
@@ -443,7 +464,7 @@ export default class GitHubPublishPlugin extends Plugin {
                         </div>
                         ` : ''}
                         <div class="b3-label fn__secondary" style="margin-top: 8px; font-size: 12px; color: var(--b3-theme-on-surface-light);" id="filePathPreview">
-                            ${this.i18n.uploadTo}: github.com/${config.repository}/${config.basePath}/${noteTitle}/index.md
+                            ${this.i18n.uploadTo}: github.com/${config.repository}/${joinPath(config.basePath, noteTitle)}/index.md
                             ${config.customDomain ? `<br>${this.i18n.publishAs}: ${config.customDomain}/${noteTitle}` : ''}
                         </div>
                     </div>
@@ -485,9 +506,9 @@ export default class GitHubPublishPlugin extends Plugin {
             const updateFilePathPreview = () => {
                 const fileName = fileNameInput.value.trim() || noteTitle;
                 if (config.customDomain) {
-                    filePathPreview.innerHTML = `上传至: github.com/${config.repository}/${config.basePath}/${fileName}/index.md<br>发布为: ${config.customDomain}/${fileName}`;
+                    filePathPreview.innerHTML = `上传至: github.com/${config.repository}/${joinPath(config.basePath, fileName)}/index.md<br>发布为: ${config.customDomain}/${fileName}`;
                 } else {
-                    filePathPreview.textContent = `上传至: github.com/${config.repository}/${config.basePath}/${fileName}/index.md`;
+                    filePathPreview.textContent = `上传至: github.com/${config.repository}/${joinPath(config.basePath, fileName)}/index.md`;
                 }
                 // 同时更新 Front matter 输入框
                 updateFrontMatterInput();
@@ -547,7 +568,7 @@ export default class GitHubPublishPlugin extends Plugin {
         const githubAPI = new GitHubAPI(config.accessToken);
 
         // 创建文件路径
-        const filePath = `${config.basePath}/${folderName}/index.md`;
+        const filePath = joinPath(config.basePath, folderName, 'index.md');
         
         // 组合Front Matter和内容
         let finalContent = processedContent.content;
@@ -586,7 +607,7 @@ export default class GitHubPublishPlugin extends Plugin {
         // 添加图片文件
         for (const image of processedContent.images) {
             if (image.content) {
-                const imagePath = `${config.basePath}/${folderName}/${image.filename}`;
+                const imagePath = joinPath(config.basePath, folderName, image.filename);
                 const base64Image = this.arrayBufferToBase64(image.content);
                 
                 files.push({
@@ -671,7 +692,7 @@ export default class GitHubPublishPlugin extends Plugin {
             noteTitle,
             folderName,
             publishTime: Date.now(),
-            markdownUrl: `https://github.com/${config.repository}/blob/${config.branch}/${config.basePath}/${folderName}/index.md`,
+            markdownUrl: `https://github.com/${config.repository}/blob/${config.branch}/${joinPath(config.basePath, folderName, 'index.md')}`,
             publishUrl: config.customDomain ? `${config.customDomain}/${folderName}` : undefined,
             config: {
                 repository: config.repository,

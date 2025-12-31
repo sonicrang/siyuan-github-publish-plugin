@@ -203,12 +203,13 @@ class GitHubSettings {
      * 获取当前配置
      */
     getConfig(): GitHubConfig {
+        const basePath = this.settingUtils.get("basePath");
         return {
             username: this.settingUtils.get("githubUsername") || "",
             accessToken: this.settingUtils.get("accessToken") || "",
             repository: this.settingUtils.get("repository") || "",
             branch: this.settingUtils.get("branch") || "main",
-            basePath: this.settingUtils.get("basePath") || "content/posts",
+            basePath: basePath !== undefined && basePath !== null ? basePath : "content/posts",
             customDomain: this.settingUtils.get("customDomain") || "",
             frontMatter: this.settingUtils.get("frontMatter") || ""
         };
