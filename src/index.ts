@@ -417,25 +417,26 @@ export default class GitHubPublishPlugin extends Plugin {
      * 获取笔记标题
      */
     private async getNoteTitle(noteId: string): Promise<string> {
+        // 桌面端标题位于 protyle 的标题元素中，可直接取用
+        const editor = this.getCurrentEditor();
+        const editorTitle = editor?.protyle?.title?.editElement?.textContent;
+        if (editorTitle) {
+            return editorTitle;
+        }
+
+        // 移动端 render.titleShowTop 为 true，protyle 内不生成标题元素（标题显示在顶栏），
+        // 因此改用内核 API 获取，其结果不依赖各端不同的标题 DOM 结构
         return new Promise((resolve) => {
-            // 直接从当前编辑器获取标题
-            const editor = this.getCurrentEditor();
-            if (editor && editor.protyle && editor.protyle.title) {
-                const titleElement = editor.protyle.title.editElement;
-                if (titleElement && titleElement.textContent) {
-                    resolve(titleElement.textContent);
+            fetchPost("/api/block/getBlockInfo", { id: noteId }, (response: any) => {
+                // getBlockInfo 通过 rootTitle 返回文档标题
+                const title = response?.data?.rootTitle || response?.data?.content;
+                if (title) {
+                    resolve(title);
                     return;
                 }
-            }
-            
-            // 如果编辑器中没有标题，使用API获取
-            fetchPost("/api/block/getBlockInfo", { id: noteId }, (response: any) => {
-                if (response.code === 0 && response.data && response.data.content) {
-                    resolve(response.data.content);
-                } else {
-                    // 如果所有方法都失败，使用默认文件名
-                    resolve(`note_${Date.now()}`);
-                }
+                // 内核取不到时退回移动端顶栏标题，全部失败才使用默认文件名
+                const toolbarNameElement = document.getElementById("toolbarName") as HTMLInputElement | null;
+                resolve(toolbarNameElement?.value || `note_${Date.now()}`);
             });
         });
     }
